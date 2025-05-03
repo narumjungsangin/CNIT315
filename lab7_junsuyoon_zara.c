@@ -10,6 +10,14 @@ Descritption: Stack and Queue
 #include <stdlib.h>
 #define MAXNAME 30
 
+//Queue head and tail
+struct Student* queueHead = NULL;
+struct Student* queueTail = NULL;
+struct Student* start = NULL;
+
+int queueSize = 0;
+int stackSize = 0;
+
 //Structure student
 struct Student
 {
@@ -19,25 +27,69 @@ struct Student
     int age;
     struct Student *nextaddr;
 };
-struct Student* start = NULL;
 
 //push
-void push(strut Student temp){
-    if(start == NULL) {
-        printf("Empty");
-        return;
-    }
+void push(struct Student temp){
     struct Student* newStudent = (struct Student*)malloc(sizeof(struct Student));
     *newStudent = temp;
     newStudent->nextaddr = start;
     start = newStudent;
+    stackSize ++;
 }
+
 //pop
-void pop(){
-    struct Student* temp = start;
+struct Student pop() {
+    struct Student temp = *start; 
+    struct Student* toFree = start;
     start = start->nextaddr;
-    free(temp);
-    
+    free(toFree);
+    stackSize--;
+    return temp; 
+}
+
+void emptyStack() {
+    while (start != NULL) {
+        struct Student temp = pop();
+        // free(temp);
+    }
+    stackSize = 0;
+}
+
+// Queue Enqueue (Insert at end)
+void enqueue (struct Student temp) {
+    struct Student* newStudent = (struct Student*)malloc(sizeof(struct Student));
+    *newStudent = temp;
+    newStudent->nextaddr = NULL; //same as push
+
+    if (queueTail == NULL) { // Empty queue
+        queueHead = newStudent;
+        queueTail = newStudent; 
+    } else {
+        queueTail->nextaddr = newStudent;
+        queueTail = newStudent;
+    }
+    queueSize++;
+}
+
+// Queue Dequeue (Remove from front)
+struct Student dequeue() {
+    struct Student temp = *queueHead;
+    struct Student* toFree = queueHead;
+    queueHead = queueHead->nextaddr;
+    if (queueHead == NULL) {
+        queueTail = NULL;
+    }
+    free(toFree);
+    queueSize--;
+    return temp;
+}
+
+// Empty the Queue
+void emptyQueue() {
+    while (queueHead != NULL) {
+        dequeue();
+    }
+    queueSize = 0;
 }
 
 // Print the Stack
@@ -48,39 +100,6 @@ void printStack() {
         current = current->nextaddr;
     }
 }
-// Queue Enqueue (Insert at end)
-void enqueue(struct Student temp) {
-    struct Student* newStudent = (struct Student*)malloc(sizeof(struct Student));
-    *newStudent = temp;
-    newStudent->nextaddr = NULL;
-
-    if (queueTail == NULL) { // Empty queue
-        queueHead = queueTail = newStudent;
-    } else {
-        queueTail->nextaddr = newStudent;
-        queueTail = newStudent;
-    }
-}
-// Queue Dequeue (Remove from front)
-void dequeue() {
-    if (queueHead == NULL) {
-        printf("Queue is empty!\n");
-        return;
-    }
-    struct Student* temp = queueHead;
-    queueHead = queueHead->nextaddr;
-    if (queueHead == NULL) { // Queue became empty
-        queueTail = NULL;
-    }
-    free(temp);
-}
-// Empty the Queue
-void emptyQueue() {
-    while (queueHead != NULL) {
-        dequeue();
-    }
-}
-
 // Print the Queue
 void printQueue() {
     struct Student* current = queueHead;
@@ -91,11 +110,29 @@ void printQueue() {
     }
 }
 
-
-
-//Queue head and tail
-struct Student* queueHead = NULL;
-struct Student* queueTail = NULL;
+void reverseQueue() {
+    int n = queueSize;
+    for (int i = 0; i < n; i++) {
+        // struct Student temp;
+        // strcpy(temp.FirstName, queueHead->FirstName);
+        // strcpy(temp.LastName, queueHead->LastName);
+        // strcpy(temp.PUID, queueHead->PUID);
+        // temp.age = queueHead->age;
+        struct Student temp = dequeue();
+        push(temp);
+    }
+    for (int i = 0; i < n; i++) {
+        // struct Student temp;
+        // strcpy(temp.FirstName, start->FirstName);
+        // strcpy(temp.LastName, start->LastName);
+        // strcpy(temp.PUID, start->PUID);
+        // temp.age = start->age;
+        struct Student temp = pop();
+        enqueue(temp);
+    }
+    printQueue();
+    // free(temp);
+}
 
 int main() {
     while(1){
@@ -108,7 +145,7 @@ int main() {
        printf("4. Dequeue - delete a node from the queue\n");
        printf("5. Empty Queue - remove all of the nodes from the queue\n");
        printf("6. Empty Stack - remove all of the nodes from the stack\n");
-       printf("87. Print Queue - print the nodes of the Queue in the order of arrival into the queue\n");
+       printf("7. Print Queue - print the nodes of the Queue in the order of arrival into the queue\n");
        printf("8. Print Stack - print the nodes of the Stack, which should be the reverse of the Queue\n");
        printf("9. Reverse Queue - Use the Stack to reverse the order of the elements in the Queue, by pushingthem on and then popping them in reverse order. This will be the test if your stack and queue structures work.\n");
        printf("10. Exit\n");
@@ -122,7 +159,6 @@ int main() {
               break;
            
           case 2:
-                printf("Create List\n");
                 printf("Enter First Name: ");
                 scanf("%s", temp.FirstName);
                 printf("Enter Last Name: ");
@@ -136,7 +172,6 @@ int main() {
                 break;
            
           case 3:
-                printf("Insert Middle\n");
                 printf("Enter First Name: ");
                 scanf("%s", temp.FirstName);
                 printf("Enter Last Name: ");
@@ -165,30 +200,23 @@ int main() {
           case 7:
                 printQueue();
                 break;
+                
           case 8:
                 printStack();
                 break;
-                
             
           case 9:
-                while (queueHead != NULL) {
-                    push(*queueHead);
-                    dequeue();
-                }
-                while (start != NULL) {
-                    enqueue(*start);
-                    pop();
-                }
-                printf("Queue reversed!\n");
+                reverseQueue();
                 break;
-               
-    
-           
+                
           case 10:
             exit(0);
+          default:
+            printf("Error");
             break;
-        
        }
     }
     return 0;
 }
+
+
